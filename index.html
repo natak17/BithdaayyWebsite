@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #ff4d94;
+            --secondary: #7000ff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0c0a09;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden; /* Prevent scrolling during transitions */
+        }
+
+        h1, h2, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Animated Aurora Background */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 20% 30%, hsla(333, 70%, 55%, 0.4) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, hsla(282, 82%, 54%, 0.3) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, hsla(210, 89%, 60%, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 10% 80%, hsla(35, 90%, 60%, 0.3) 0%, transparent 40%);
+            filter: blur(80px);
+            background-size: 200% 200%;
+            animation: auroraMove 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes auroraMove {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-card {
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            border-radius: 24px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4, #fbc2eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff4d94, #ff0055);
+            box-shadow: 0 4px 15px rgba(255, 77, 148, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 77, 148, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 20%;
+            background: linear-gradient(90deg, #ff4d94, #7000ff);
+            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        /* Polaroid Effect */
+        .polaroid {
+            background: white;
+            padding: 12px 12px 40px 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .step {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .step.active {
+            display: flex;
+        }
+
+        /* Hide Scrollbar */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="aurora-bg"></div>
+    <canvas id="three-canvas"></canvas>
+
+    <div class="progress-container">
+        <div id="progress" class="progress-fill"></div>
+    </div>
+
+    <main class="relative z-10 min-h-screen flex items-center justify-center p-6">
+        
+        <!-- Step 1: The Grand Welcome -->
+        <div id="step1" class="step active glass-card max-w-md w-full p-10 flex-col items-center text-center">
+            <div class="text-6xl mb-6 animate-bounce">❤️</div>
+            <h1 class="text-5xl font-bold mb-4 text-gradient">Hello jalebi,</h1>
+            <p class="text-slate-300 mb-8 text-lg">I built a little world for you, just to bring a smile to your face on your special day.</p>
+            <button onclick="nextStep(2)" class="btn-primary px-8 py-3 rounded-full font-bold text-white uppercase tracking-wider">Let's Begin</button>
+        </div>
+
+        <!-- Step 2: The Core Message -->
+        <div id="step2" class="step glass-card max-w-md w-full p-10 flex-col items-center text-center">
+            <div class="text-6xl mb-6">🎉</div>
+            <h2 class="text-4xl font-bold mb-4 text-gradient">Happy Birthday jalebi!</h2>
+            <p class="text-slate-300 mb-8 text-lg leading-relaxed">Another year of you making the world brighter. Your existence is a gift, and I'm so lucky to witness it.In a world full of temporary things, you are my forever.Life is sweater with you by my side kunu kunu chuaa.</p>
+            <button onclick="nextStep(3)" class="btn-primary px-8 py-3 rounded-full font-bold text-white uppercase tracking-wider">There's more...</button>
+        </div>
+
+        <!-- Step 3: Bento Grid -->
+        <div id="step3" class="step glass-card max-w-4xl w-full p-8 flex-col items-center">
+            <h2 class="text-3xl font-bold mb-8 text-gradient text-center">A Few Things I Adore About You</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 w-full">
+                <div class="md:col-span-2 glass-card bg-white/5 p-6 rounded-2xl">
+                    <h3 class="text-pink-400 font-bold mb-2">✨ Your Unmatched Kindness</h3>
+                    <p class="text-sm text-slate-300">The genuine warmth you show to everyone is something truly rare and beautiful. It inspires me every day.</p>
+                </div>
+                <div class="glass-card bg-white/5 p-6 rounded-2xl flex flex-col justify-center items-center text-center">
+                    <h3 class="text-pink-400 font-bold mb-2">😊 That Smile</h3>
+                    <p class="text-sm text-slate-300">It's a work of art that lights up any room.</p>
+                </div>
+                <div class="md:col-span-3 glass-card bg-white/5 p-6 rounded-2xl">
+                    <h3 class="text-pink-400 font-bold mb-2">🌟 Your Radiant Spirit</h3>
+                    <p class="text-sm text-slate-300 text-center">Your passion for life is infectious. Being around you makes everything feel more exciting and possible.</p>
+                </div>
+            </div>
+            <button onclick="nextStep(4)" class="btn-primary px-8 py-3 rounded-full font-bold text-white uppercase tracking-wider">Remember this?</button>
+        </div>
+
+        <!-- Step 4: Shared Memory -->
+        <div id="step4" class="step glass-card max-w-lg w-full p-10 flex-col items-center text-center">
+            <h2 class="text-3xl font-bold mb-8 text-gradient">That One Time...</h2>
+            
+            <div class="polaroid-container mb-8" id="polaroid-trigger">
+                <div class="polaroid" id="polaroid-card">
+                    <img src="C:\Users\trisa\Downloads\WhatsApp Image 2026-04-17 at 5.07.51 AM.JPEG" alt="Memory" class="w-full h-64 object-cover">
+                    <p class="serif text-slate-800 text-xl mt-4">Our favorite memory.</p>
+                </div>
+            </div>
+
+            <p class="text-slate-300 mb-8 italic">"Every moment with you feels like a scene from a movie I'd watch on repeat."</p>
+            <button onclick="nextStep(5)" class="btn-primary px-8 py-3 rounded-full font-bold text-white uppercase tracking-wider">One last thing...</button>
+        </div>
+
+        <!-- Step 5: Finale -->
+        <div id="step5" class="step glass-card max-w-md w-full p-10 flex-col items-center text-center">
+            <div class="text-6xl mb-6">🎂</div>
+            <h2 class="text-4xl font-bold mb-4 text-gradient">My Wish For You</h2>
+            <p class="text-slate-300 mb-8 text-lg">May the next year bring you all the love, success, and pure happiness you so rightfully deserve. May your dreams soar higher than ever.</p>
+            
+            <div id="final-wish" class="hidden opacity-0 text-2xl font-bold text-white mb-8 serif italic">
+                Happy Birthday, jalebi ❤️
+            </div>
+
+            <button id="celebrate-btn" onclick="startFinale()" class="btn-primary px-10 py-4 rounded-full font-bold text-white uppercase tracking-wider text-lg">Celebrate!</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, hearts = [];
+        const heartCount = 25;
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            const heartShape = new THREE.Shape();
+            heartShape.moveTo(0, 0);
+            heartShape.bezierCurveTo(0, 0, -5, -15, -20, -15);
+            heartShape.bezierCurveTo(-35, -15, -35, 5, -35, 5);
+            heartShape.bezierCurveTo(-35, 20, -20, 35, 0, 50);
+            heartShape.bezierCurveTo(20, 35, 35, 20, 35, 5);
+            heartShape.bezierCurveTo(35, 5, 35, -15, 20, -15);
+            heartShape.bezierCurveTo(10, -15, 0, 0, 0, 0);
+
+            const geometry = new THREE.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true, bevelThickness: 2, bevelSize: 2 });
+            
+            for (let i = 0; i < heartCount; i++) {
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: new THREE.Color(`hsl(${Math.random() * 20 + 340}, 80%, 60%)`),
+                    shininess: 100,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const heart = new THREE.Mesh(geometry, material);
+                
+                heart.position.set(
+                    (Math.random() - 0.5) * 400,
+                    (Math.random() - 0.5) * 400,
+                    (Math.random() - 0.5) * 200 - 100
+                );
+                heart.scale.set(0.2, 0.2, 0.2);
+                heart.rotation.x = Math.PI; // Flip it right side up
+                heart.rotation.z = Math.random() * Math.PI;
+                
+                heart.userData = {
+                    speed: 0.02 + Math.random() * 0.05,
+                    floatOffset: Math.random() * Math.PI * 2
+                };
+
+                hearts.push(heart);
+                scene.add(heart);
+            }
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(0, 0, 1);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            camera.position.z = 150;
+            animateThree();
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            const time = Date.now() * 0.001;
+
+            hearts.forEach(heart => {
+                heart.position.y += Math.sin(time + heart.userData.floatOffset) * 0.2;
+                heart.rotation.y += heart.userData.speed;
+                heart.position.x += Math.cos(time + heart.userData.floatOffset) * 0.1;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // --- NAVIGATION LOGIC ---
+        let currentStep = 1;
+
+        function nextStep(stepNum) {
+            const currentEl = document.getElementById(`step${currentStep}`);
+            const nextEl = document.getElementById(`step${stepNum}`);
+            
+            // Progress Bar
+            gsap.to("#progress", { width: `${(stepNum / 5) * 100}%`, duration: 0.8, ease: "power2.inOut" });
+
+            // Step Transition
+            gsap.to(currentEl, { 
+                opacity: 0, 
+                y: -20, 
+                scale: 0.95, 
+                duration: 0.5, 
+                onComplete: () => {
+                    currentEl.style.display = 'none';
+                    nextEl.style.display = 'flex';
+                    gsap.fromTo(nextEl, 
+                        { opacity: 0, y: 30, scale: 0.9 }, 
+                        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.7)" }
+                    );
+                }
+            });
+            currentStep = stepNum;
+        }
+
+        // --- POLAROID TILT EFFECT ---
+        const polaroidTrigger = document.getElementById('polaroid-trigger');
+        const polaroidCard = document.getElementById('polaroid-card');
+
+        if (polaroidTrigger) {
+            polaroidTrigger.addEventListener('mousemove', (e) => {
+                const rect = polaroidTrigger.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                const dx = x - xc;
+                const dy = y - yc;
+
+                gsap.to(polaroidCard, {
+                    rotationY: dx / 10,
+                    rotationX: -dy / 10,
+                    duration: 0.5
+                });
+            });
+
+            polaroidTrigger.addEventListener('mouseleave', () => {
+                gsap.to(polaroidCard, { rotationY: 0, rotationX: 0, duration: 0.5 });
+            });
+        }
+
+        // --- FINALE SEQUENCE ---
+        function startFinale() {
+            const btn = document.getElementById('celebrate-btn');
+            const wish = document.getElementById('final-wish');
+            
+            btn.disabled = true;
+            gsap.to(btn, { opacity: 0, y: 10, duration: 0.5 });
+            
+            // Show final wish
+            wish.classList.remove('hidden');
+            gsap.to(wish, { opacity: 1, y: -10, delay: 0.5, duration: 1 });
+
+            // Confetti Bursts
+            const end = Date.now() + 5000;
+            const colors = ['#ff4d94', '#7000ff', '#ffffff', '#ff0055'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.8 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.8 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            // Continuous Emoji Confetti
+            setTimeout(() => {
+                const scalar = 2;
+                const heart = confetti.shapeFromText({ text: '❤️', scalar });
+                const star = confetti.shapeFromText({ text: '✨', scalar });
+
+                confetti({
+                    shapes: [heart, star],
+                    particleCount: 40,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: colors
+                });
+            }, 1000);
+
+            // Three.js Hearts Exit
+            hearts.forEach((heart, i) => {
+                gsap.to(heart.position, {
+                    y: 500,
+                    x: heart.position.x + (Math.random() - 0.5) * 200,
+                    duration: 3 + Math.random() * 2,
+                    delay: i * 0.05,
+                    ease: "power2.in"
+                });
+                gsap.to(heart.material, {
+                    opacity: 0,
+                    duration: 2,
+                    delay: 2 + i * 0.05
+                });
+            });
+        }
+
+        // Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize
+        window.onload = () => {
+            initThree();
+            gsap.to("#step1", { opacity: 1, y: 0, duration: 1, delay: 0.5 });
+        };
+    </script>
+</body>
+</html>
